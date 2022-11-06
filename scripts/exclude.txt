@@ -11,11 +11,9 @@ tmp
 cache
 .cache
 
-capteur/env
-
 node_modules
 
-# Streaming files
+# Don't backup TV shows.
 /media/docker/storage
 /media/docker/transmission
 
@@ -25,4 +23,5 @@ node_modules
 
 /media/docker/restic
 
-/home/ozon/monitoring/metrics
+/srv/sensor/env
+/srv/monitoring/metrics
