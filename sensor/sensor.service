@@ -1,0 +1,13 @@
+# /etc/systemd/system/sensor.service
+
+[Unit]
+Description=Humidity and temperature sensor
+After=network.target
+ 
+[Service]
+User=root
+ExecStart=/srv/sensor/env/bin/python /srv/sensor/get_temp.py
+Restart=always
+ 
+[Install]
+WantedBy=multi-user.target

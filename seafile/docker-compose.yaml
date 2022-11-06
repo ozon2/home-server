@@ -1,0 +1,71 @@
+version: "3.8"
+services:
+  db:
+    image: linuxserver/mariadb:10.6.10
+    container_name: seafile-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWD}
+      MYSQL_LOG_CONSOLE: "true"
+    restart: unless-stopped
+    volumes:
+      - /media/docker/seafile/db:/config
+    networks:
+      - seafile_internal
+
+  memcached:
+    image: memcached:1.6
+    container_name: seafile-memcached
+    entrypoint: memcached -m 256
+    restart: unless-stopped
+    networks:
+      - seafile_internal
+
+  seafile:
+    image: franchetti/seafile-arm:9
+    container_name: seafile
+    volumes:
+      - /media/docker/seafile/shared:/shared # Seafile data persistent store.
+      - ./seafdav.conf:/shared/conf/seafdav.conf:ro
+    environment:
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      MYSQL_HOST: db
+      MYSQL_ROOT_PASSWD: ${MYSQL_ROOT_PASSWD}
+      MYSQL_USER_PASSWD: ${MYSQL_USER_PASSWD}
+      SEAFILE_ADMIN_EMAIL: ${SEAFILE_ADMIN_EMAIL}
+      SEAFILE_ADMIN_PASSWORD: ${SEAFILE_ADMIN_PASSWORD}
+      SERVER_IP: ${SERVER_IP}
+    depends_on:
+      - db
+      - memcached
+    restart: unless-stopped
+    networks:
+      - seafile_internal
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.seafile.rule=Host(`seafile.$DOMAIN`)"
+      - "traefik.http.routers.seafile.tls=true"
+      - "traefik.http.services.seafile.loadbalancer.server.port=8000"
+      - "traefik.http.routers.seafile.service=seafile"
+      # SeafHTTP file server
+      - "traefik.http.routers.seafhttp.rule=Host(`seafile.$DOMAIN`) && PathPrefix(`/seafhttp`)"
+      - "traefik.http.routers.seafhttp.tls=true"
+      - "traefik.http.services.seafhttp.loadbalancer.server.port=8082"
+      - "traefik.http.routers.seafhttp.service=seafhttp"
+      - "traefik.http.routers.seafhttp.middlewares=seafhttp@docker"
+      - "traefik.http.middlewares.seafhttp.stripprefix.prefixes=/seafhttp"
+      # WebDAV server
+      - "traefik.http.routers.seafdav.rule=Host(`seafile.$DOMAIN`) && PathPrefix(`/seafdav`)"
+      - "traefik.http.routers.seafdav.tls=true"
+      - "traefik.http.services.seafdav.loadbalancer.server.port=8080"
+      - "traefik.http.routers.seafdav.service=seafdav"
+      # Don't auto update, there are local modification to fix webdav,
+      # see https://github.com/haiwen/seafdav/pull/70/files.
+      - "com.centurylinklabs.watchtower.monitor-only=true"
+
+networks:
+  seafile_internal:
+  traefik_proxy:
+    external: true

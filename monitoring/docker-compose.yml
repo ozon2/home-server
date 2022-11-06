@@ -1,0 +1,84 @@
+version: "3"
+
+services:
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter
+    volumes:
+      - "/:/host:ro,rslave"
+      - "/media/docker:/host/media/docker:ro,rslave"
+    command:
+      - "--path.rootfs=/host"
+      - "--collector.netclass.ignored-devices=(veth|br).*"
+      - "--collector.netdev.device-exclude=(veth|br).*"
+    network_mode: host # node_exporter needs to be on the host network to monitor bandwidth.
+    pid: host
+    restart: unless-stopped
+
+  # We can't have prometheus on host network because grafana is in the traefik_proxy network,
+  # so I used a shell command to export the metrics to a file mounted by an nginx container to expose it
+  # on the traefik_proxy network...
+  temperature-exporter:
+    image: busybox
+    volumes:
+      - ./metrics:/metrics
+    network_mode: host
+    command:
+      - /bin/sh
+      - -c
+      - |
+        while :; do
+          wget -q localhost:9100/metrics -O /metrics/metrics
+          cpu=$$(cat /sys/class/thermal/thermal_zone0/temp)
+          echo rpi_cpu_temp $$cpu >> /metrics/metrics
+          sleep 30
+        done
+    restart: unless-stopped
+
+  temperature-exporter-expose:
+    image: python:slim
+    volumes:
+      - ./metrics:/metrics:ro
+    command: "sh -c 'cd /metrics && python -m http.server'"
+    networks:
+      - backend
+    restart: unless-stopped
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - traefik_proxy
+      - backend
+    restart: unless-stopped
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.tls=true"
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
+networks:
+  traefik_proxy:
+    external: true
+  backend:
+    external: false

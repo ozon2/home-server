@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+  traefik:
+    image: traefik:v2.9
+    # Traefik doesn't support loading its static configuration from a file and flags at the same time,
+    # and I want to use environment variables for some settings, so all my config is set with flags.
+    command:
+      # Providers
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service"}}.${DOMAIN}`)'
+      - '--providers.docker.network=traefik_proxy'
+      - '--providers.file.directory=/config'
+      # Entrypoints
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.websecure.http.middlewares=hsts-header@file'
+      - '--entrypoints.websecure.http.tls.certResolver=letsencrypt'
+      - '--entrypoints.websecure.http.tls.options=modern@file'
+      # Let's Encrypt
+      - '--certificatesresolvers.letsencrypt.acme.email=${CLOUDFLARE_EMAIL}'
+      - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.dnsChallenge'
+      - '--certificatesresolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare'
+      # Misc
+      - '--api.dashboard'
+      - '--api.insecure'
+      - '--log.level=INFO'
+      - '--global.sendanonymoususage=false'
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config.yaml:/config/config.yaml:ro
+      - ./letsencrypt:/letsencrypt
+    container_name: traefik
+    labels:
+      traefik.enable: true
+      traefik.http.routers.traefik.tls: true
+      traefik.http.services.traefik.loadbalancer.server.port: 8080
+    environment:
+      CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY}
+      CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL}
+    networks:
+      - traefik_proxy
+
+networks:
+  traefik_proxy:
+    external: true

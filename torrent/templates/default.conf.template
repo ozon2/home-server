@@ -1,0 +1,15 @@
+server {
+    listen 80 default_server;
+
+    root /usr/share/nginx/html;
+
+    server_name torrent.$DOMAIN;
+
+    client_max_body_size 0;
+
+    location / {
+	allow all;
+        autoindex on;
+	disable_symlinks off;
+    }
+}

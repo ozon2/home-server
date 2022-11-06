@@ -1,0 +1,28 @@
+/dev
+/proc
+/mnt
+/run
+/sys
+
+lost+found
+/var/swap
+
+tmp
+cache
+.cache
+
+capteur/env
+
+node_modules
+
+# Streaming files
+/media/docker/storage
+/media/docker/transmission
+
+# Backup only docker volumes
+/media/docker/docker-data-root/*
+!/media/docker/docker-data-root/volumes
+
+/media/docker/restic
+
+/home/ozon/monitoring/metrics

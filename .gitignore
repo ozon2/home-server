@@ -1,0 +1,6 @@
+.env
+env
+monitoring/metrics
+traefik/letsencrypt
+torrent/nginx/dhparams.pem
+homer/assets

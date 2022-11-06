@@ -1,0 +1,3 @@
+influxdb-client
+adafruit-circuitpython-dht
+python-dotenv
