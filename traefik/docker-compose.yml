@@ -16,6 +16,7 @@ services:
       - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
       - '--entrypoints.websecure.address=:443'
       - '--entrypoints.websecure.http.middlewares=hsts-header@file'
+      - '--entrypoints.websecure.http.tls'
       - '--entrypoints.websecure.http.tls.certResolver=letsencrypt'
       - '--entrypoints.websecure.http.tls.options=modern@file'
       # Let's Encrypt

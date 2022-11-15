@@ -3,8 +3,9 @@ version: "3"
 services:
   influxdb:
     image: influxdb:1.8
+    container_name: influxdb
     volumes:
-      - influxdb-storage:/var/lib/influxdb
+      - /media/docker/influxdb:/var/lib/influxdb
     env_file:
       - ".env"
     networks:
@@ -21,8 +22,9 @@ services:
 
   chronograf:
     image: chronograf:latest
+    container_name: chronograf
     volumes:
-      - chronograf-storage:/var/lib/chronograf
+      - /media/docker/chronograf:/var/lib/chronograf
     depends_on:
       - influxdb
     env_file:
@@ -34,9 +36,16 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.chronograf.tls=true"
 
-volumes:
-  influxdb-storage: {}
-  chronograf-storage: {}
+  # Temperature dashboard: https://github.com/ozon2/influxdb-dashboard.
+  dashboard:
+    image: registry.local/influxdb-dashboard:latest
+    container_name: dashboard
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.tls=true"
+    networks:
+      - traefik_proxy
 
 networks:
   traefik_proxy:
