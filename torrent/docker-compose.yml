@@ -118,7 +118,8 @@ services:
     environment:
       - DOMAIN=${DOMAIN}
     volumes:
-      - /media/docker/storage:/usr/share/nginx/html:ro
+      - /media/docker/storage:/usr/share/nginx/html/videos:ro
+      - /media/docker/transmission/completed:/usr/share/nginx/html/torrent:ro
       - ./templates:/etc/nginx/templates
     restart: unless-stopped
     networks:

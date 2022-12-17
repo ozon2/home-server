@@ -21,11 +21,8 @@ while True:
         humidity = dhtDevice.humidity
         print("Temp: {:.1f} C    Humidity: {}% ".format(temperature_c, humidity))
 
-        p1 = Point("temperature").field("value", temperature_c)
-        write_api.write(bucket="db0", record=p1)
-
-        p2 = Point("humidity").field("value", humidity)
-        write_api.write(bucket="db0", record=p2)
+        p = Point("dht").field("temperature", temperature_c).field("humidity", humidity).tag("id", "1")
+        write_api.write(bucket="sensors", record=p)
 
     except RuntimeError as error:
         print(error.args[0])
