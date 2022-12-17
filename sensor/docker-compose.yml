@@ -16,7 +16,7 @@ services:
       - "traefik.http.routers.influxdb.tls.options=old@file"
       - "traefik.http.routers.influxdb.tls=true"
       - "traefik.http.middlewares.influxdb-corsheaders.headers.accesscontrolallowmethods=GET,OPTIONS,POST"
-      - "traefik.http.middlewares.influxdb-corsheaders.headers.accesscontrolalloworiginlist=http://localhost:3000,https://controlhub.clementlize.com"
+      - "traefik.http.middlewares.influxdb-corsheaders.headers.accesscontrolalloworiginlist=http://localhost:3000"
       - "traefik.http.middlewares.influxdb-corsheaders.headers.accessControlAllowHeaders=Authorization,Content-Type"
       - "traefik.http.routers.influxdb.middlewares=hsts-header@file,influxdb-corsheaders@docker"
 
@@ -35,6 +35,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.chronograf.tls=true"
+      - "traefik.http.routers.chronograf.middlewares=chronograf-auth@docker"
+      - "traefik.http.middlewares.chronograf-auth.basicauth.users=${CHRONOGRAF_BASIC_AUTH}"
 
   # Temperature dashboard: https://github.com/ozon2/influxdb-dashboard.
   dashboard:
