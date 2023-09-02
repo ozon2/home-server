@@ -16,14 +16,14 @@ services:
       - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
       - '--entrypoints.websecure.address=:443'
       - '--entrypoints.websecure.http.middlewares=hsts-header@file'
-      - '--entrypoints.websecure.http.tls'
+      - '--entrypoints.websecure.http.tls=true'
       - '--entrypoints.websecure.http.tls.certResolver=letsencrypt'
       - '--entrypoints.websecure.http.tls.options=modern@file'
       # Let's Encrypt
-      - '--certificatesresolvers.letsencrypt.acme.email=${CLOUDFLARE_EMAIL}'
+      #- '--certificatesresolvers.letsencrypt.acme.email=${CLOUDFLARE_EMAIL}'
       - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
-      - '--certificatesresolvers.letsencrypt.acme.dnsChallenge'
-      - '--certificatesresolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge=true'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
       # Misc
       - '--api.dashboard'
       - '--api.insecure'
@@ -38,14 +38,17 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config.yaml:/config/config.yaml:ro
       - ./letsencrypt:/letsencrypt
+      - /home/ubuntu/.lego/certificates:/certificates:ro
     container_name: traefik
     labels:
       traefik.enable: true
       traefik.http.routers.traefik.tls: true
       traefik.http.services.traefik.loadbalancer.server.port: 8080
-    environment:
-      CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY}
-      CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL}
+      traefik.http.routers.traefik.middlewares: traefik-auth@docker
+      traefik.http.middlewares.traefik-auth.basicauth.users: "${BASIC_AUTH}"
+    #environment:
+      #CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY}
+      #CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL}
     networks:
       - traefik_proxy
 
