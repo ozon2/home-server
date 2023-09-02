@@ -4,7 +4,7 @@ services:
     image: linuxserver/mariadb:10.6.10
     container_name: seafile-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_LOG_CONSOLE: "true"
     restart: unless-stopped
     volumes:
@@ -21,21 +21,18 @@ services:
       - seafile_internal
 
   seafile:
-    image: franchetti/seafile-arm:9
+    image: seafileltd/seafile-mc:latest
     container_name: seafile
     volumes:
       - /media/docker/seafile/shared:/shared # Seafile data persistent store.
       - ./seafdav.conf:/shared/conf/seafdav.conf:ro
     environment:
       TZ: ${TZ}
-      PUID: ${PUID}
-      PGID: ${PGID}
-      MYSQL_HOST: db
-      MYSQL_ROOT_PASSWD: ${MYSQL_ROOT_PASSWD}
-      MYSQL_USER_PASSWD: ${MYSQL_USER_PASSWD}
+      DB_HOST: db
+      DB_ROOT_PASSWD: ${MYSQL_ROOT_PASSWORD}
       SEAFILE_ADMIN_EMAIL: ${SEAFILE_ADMIN_EMAIL}
       SEAFILE_ADMIN_PASSWORD: ${SEAFILE_ADMIN_PASSWORD}
-      SERVER_IP: ${SERVER_IP}
+      NON_ROOT: "true"
     depends_on:
       - db
       - memcached
@@ -47,7 +44,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.seafile.rule=Host(`seafile.$DOMAIN`)"
       - "traefik.http.routers.seafile.tls=true"
-      - "traefik.http.services.seafile.loadbalancer.server.port=8000"
+      - "traefik.http.services.seafile.loadbalancer.server.port=80"
       - "traefik.http.routers.seafile.service=seafile"
       # SeafHTTP file server
       - "traefik.http.routers.seafhttp.rule=Host(`seafile.$DOMAIN`) && PathPrefix(`/seafhttp`)"
