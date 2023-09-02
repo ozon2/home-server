@@ -6,42 +6,14 @@ services:
     image: prom/node-exporter
     volumes:
       - "/:/host:ro,rslave"
-      - "/media/docker:/host/media/docker:ro,rslave"
     command:
       - "--path.rootfs=/host"
       - "--collector.netclass.ignored-devices=(veth|br).*"
       - "--collector.netdev.device-exclude=(veth|br).*"
-    network_mode: host # node_exporter needs to be on the host network to monitor bandwidth.
-    pid: host
-    restart: unless-stopped
-
-  # We can't have prometheus on host network because grafana is in the traefik_proxy network,
-  # so I used a shell command to export the metrics to a file mounted by an nginx container to expose it
-  # on the traefik_proxy network...
-  temperature-exporter:
-    image: busybox
-    volumes:
-      - ./metrics:/metrics
-    network_mode: host
-    command:
-      - /bin/sh
-      - -c
-      - |
-        while :; do
-          wget -q localhost:9100/metrics -O /metrics/metrics
-          cpu=$$(cat /sys/class/thermal/thermal_zone0/temp)
-          echo rpi_cpu_temp $$cpu >> /metrics/metrics
-          sleep 30
-        done
-    restart: unless-stopped
-
-  temperature-exporter-expose:
-    image: python:slim
-    volumes:
-      - ./metrics:/metrics:ro
-    command: "sh -c 'cd /metrics && python -m http.server'"
+      - "--web.listen-address=0.0.0.0:9100"
     networks:
-      - backend
+      - traefik_proxy
+    pid: host
     restart: unless-stopped
 
   prometheus:
@@ -52,7 +24,8 @@ services:
       - prometheus_data:/prometheus
     networks:
       - traefik_proxy
-      - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
   grafana:
@@ -80,5 +53,3 @@ volumes:
 networks:
   traefik_proxy:
     external: true
-  backend:
-    external: false
