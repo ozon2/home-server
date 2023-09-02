@@ -24,4 +24,3 @@ Docker compose services running behind Traefik.
 
 - [Traefik](https://github.com/traefik/traefik): reverse proxy
 - [Seafile](https://github.com/haiwen/seafile): file sync and share
-- [Homer](https://github.com/bastienwirtz/homer): home page
