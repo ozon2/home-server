@@ -23,6 +23,3 @@ node_modules
 !/media/docker/docker-data-root/volumes
 
 /media/docker/restic
-
-/srv/sensor/env
-/srv/monitoring/metrics

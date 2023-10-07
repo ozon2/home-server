@@ -2,7 +2,7 @@ version: "3"
 
 services:
   influxdb:
-    image: influxdb:1.8
+    image: influxdb:2.7
     container_name: influxdb
     volumes:
       - /media/docker/influxdb:/var/lib/influxdb
@@ -14,7 +14,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.influxdb.tls.options=old@file"
-      - "traefik.http.routers.influxdb.tls=true"
       - "traefik.http.middlewares.influxdb-corsheaders.headers.accesscontrolallowmethods=GET,OPTIONS,POST"
       - "traefik.http.middlewares.influxdb-corsheaders.headers.accesscontrolalloworiginlist=http://localhost:3000"
       - "traefik.http.middlewares.influxdb-corsheaders.headers.accessControlAllowHeaders=Authorization,Content-Type"
@@ -34,7 +33,6 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.chronograf.tls=true"
       - "traefik.http.routers.chronograf.middlewares=chronograf-auth@docker"
       - "traefik.http.middlewares.chronograf-auth.basicauth.users=${CHRONOGRAF_BASIC_AUTH}"
 
@@ -45,7 +43,6 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.tls=true"
     networks:
       - traefik_proxy
 

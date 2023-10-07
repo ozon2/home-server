@@ -45,7 +45,7 @@ services:
       traefik.http.routers.traefik.tls: true
       traefik.http.services.traefik.loadbalancer.server.port: 8080
       traefik.http.routers.traefik.middlewares: traefik-auth@docker
-      traefik.http.middlewares.traefik-auth.basicauth.users: "${BASIC_AUTH}"
+      traefik.http.middlewares.traefik-auth.basicauth.users: "${TRAEFIK_BASIC_AUTH}"
     #environment:
       #CLOUDFLARE_API_KEY: ${CLOUDFLARE_API_KEY}
       #CLOUDFLARE_EMAIL: ${CLOUDFLARE_EMAIL}

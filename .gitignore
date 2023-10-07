@@ -1,6 +1,7 @@
 .env
+.lego
 env
-monitoring/metrics
 traefik/letsencrypt
+traefik/config.yaml
 torrent/nginx/dhparams.pem
-homer/assets
+torrent/ovpn

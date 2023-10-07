@@ -9,7 +9,6 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.status.tls=true"
     networks:
       - traefik_proxy
 

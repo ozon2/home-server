@@ -44,7 +44,6 @@ services:
       - traefik_proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.tls=true"
 
 volumes:
   prometheus_data: {}

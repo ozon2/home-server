@@ -43,19 +43,16 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.seafile.rule=Host(`seafile.$DOMAIN`)"
-      - "traefik.http.routers.seafile.tls=true"
       - "traefik.http.services.seafile.loadbalancer.server.port=80"
       - "traefik.http.routers.seafile.service=seafile"
       # SeafHTTP file server
       - "traefik.http.routers.seafhttp.rule=Host(`seafile.$DOMAIN`) && PathPrefix(`/seafhttp`)"
-      - "traefik.http.routers.seafhttp.tls=true"
       - "traefik.http.services.seafhttp.loadbalancer.server.port=8082"
       - "traefik.http.routers.seafhttp.service=seafhttp"
       - "traefik.http.routers.seafhttp.middlewares=seafhttp@docker"
       - "traefik.http.middlewares.seafhttp.stripprefix.prefixes=/seafhttp"
       # WebDAV server
       - "traefik.http.routers.seafdav.rule=Host(`seafile.$DOMAIN`) && PathPrefix(`/seafdav`)"
-      - "traefik.http.routers.seafdav.tls=true"
       - "traefik.http.services.seafdav.loadbalancer.server.port=8080"
       - "traefik.http.routers.seafdav.service=seafdav"
       # Don't auto update, there are local modification to fix webdav,
